@@ -2,7 +2,6 @@ import logging
 import os
 import shutil
 import subprocess
-import argparse
 
 from flask import Flask, jsonify, request
 from waitress import serve
@@ -19,40 +18,16 @@ from werkzeug.utils import secure_filename
 from constants import CHROMA_SETTINGS, EMBEDDING_MODEL_NAME, PERSIST_DIRECTORY
 
 
-model_id = "TheBloke/orca_mini_3B-GGML"
-model_basename = "orca-mini-3b.ggmlv3.q4_0.bin"
-temp = 0
-n_ctx = 2048
-PROMPT_PATH = ""
+model_id = os.getenv("MODEL_ID", default="TheBloke/orca_mini_3B-GGML")
+model_basename = os.getenv("MODEL_BASENAME", default="orca-mini-3b.ggmlv3.q4_0.bin")
+temp = os.getenv("TEMP", default=0)
+n_ctx = os.getenv("N_CTX", default=2048)
+PROMPT_PATH = "prompt.txt"
 prompt_template = ""
 
 DEVICE_TYPE = "cpu"
 SHOW_SOURCES = True
 EMBEDDINGS = HuggingFaceInstructEmbeddings(model_name=EMBEDDING_MODEL_NAME, model_kwargs={"device": DEVICE_TYPE})
-
-# Initialize parser
-parser = argparse.ArgumentParser()
-
-# Adding optional argument
-parser.add_argument("--model-id")
-parser.add_argument("--model-basename")
-parser.add_argument("--temp")
-parser.add_argument("--n_ctx")
-parser.add_argument("--prompt-path")
-
-# Read arguments from command line
-args = parser.parse_args()
-
-if args.model_id:
-    model_id = args.model_id
-if args.model_basename:
-    model_id = args.model_basename
-if args.temp:
-    temp = args.temp
-if args.n_ctx:
-    n_ctx = args.n_ctx
-if args.prompt_path:
-    PROMPT_PATH = args.prompt_path
 
 
 logging.info(f"Running on: {DEVICE_TYPE}")
