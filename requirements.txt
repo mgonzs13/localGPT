@@ -20,6 +20,7 @@ accelerate
 bitsandbytes
 click
 flask
+waitress
 requests
 
 # Excel File Manipulation
