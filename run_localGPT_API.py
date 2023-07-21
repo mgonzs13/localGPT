@@ -22,6 +22,7 @@ model_id = os.getenv("MODEL_ID", default="TheBloke/orca_mini_3B-GGML")
 model_basename = os.getenv("MODEL_BASENAME", default="orca-mini-3b.ggmlv3.q4_0.bin")
 temp = os.getenv("TEMP", default=0)
 n_ctx = os.getenv("N_CTX", default=2048)
+n_threads = os.getenv("N_THREADS", default=4)
 PROMPT_PATH = "prompt.txt"
 prompt_template = ""
 
@@ -72,7 +73,7 @@ RETRIEVER = DB.as_retriever()
 
 
 # load the LLM for generating Natural Language responses
-def load_model(model_id, model_basename, temp, n_ctx):
+def load_model(model_id, model_basename, temp, n_ctx, n_threads):
 
     logging.info(f"Loading Model: {model_id}")
 
@@ -83,11 +84,12 @@ def load_model(model_id, model_basename, temp, n_ctx):
         n_ctx=n_ctx,
         max_tokens=n_ctx,
         temperature=temp,
-        repeat_penalty=1.15
+        repeat_penalty=1.15,
+        n_threads=n_threads
     )
 
 
-LLM = load_model(model_id, model_basename, temp, n_ctx)
+LLM = load_model(model_id, model_basename, temp, n_ctx, n_threads)
 QA = RetrievalQA.from_chain_type(
     llm=LLM, chain_type="stuff", retriever=RETRIEVER, return_source_documents=SHOW_SOURCES
 )
@@ -179,9 +181,10 @@ def prompt_route():
     ram = request.json["RAM"]
     so = request.json["SO"]
     cloud_providers = request.json["cloud_providers"]
+    num = request.json["num"]
 
     user_prompt = prompt_template.replace("<TARGET>", target).replace(
-        "<RAM>", ram).replace("<SO>", so).replace("<CLOUD_PROVIDERS>", cloud_providers)
+        "<RAM>", ram).replace("<SO>", so).replace("<CLOUD_PROVIDERS>", cloud_providers).replace("<NUM>", num)
 
     print("Processing prompt")
     res = QA(user_prompt)
